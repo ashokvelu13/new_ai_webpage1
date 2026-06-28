@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech Studio</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: #f4f4f9; 
+            color: #333; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px; 
+        }
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        }
+        h2 {
+            margin-top: 0;
+            color: #111;
+        }
+        textarea { 
+            width: 100%; 
+            height: 120px; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            resize: vertical; 
+            font-size: 15px;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        label {
+            display: block; 
+            margin-top: 15px; 
+            font-weight: 500;
+        }
+        select, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 8px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 16px; 
+            cursor: pointer; 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            font-weight: bold; 
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled { 
+            background: #cccccc; 
+            cursor: not-allowed; 
+        }
+        .player-container { 
+            margin-top: 25px; 
+            text-align: center; 
+            display: none; 
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        audio { 
+            width: 100%; 
+            margin-top: 12px; 
+        }
+        .status { 
+            font-size: 14px; 
+            color: #666; 
+            margin-top: 12px; 
+            text-align: center; 
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>TTS Player</h2>
+        <textarea id="textInput" placeholder="Type or paste the text you want Kokoro to say out loud..."></textarea>
+        
+        <label for="voiceSelect">Choose Voice Profile:</label>
+        <select id="voiceSelect">
+            <!-- American Voices -->
+            <option value="af_heart">af_heart (US Female - Default)</option>
+            <option value="af_bella">af_bella (US Female)</option>
+            <option value="af_nicole">af_nicole (US Female)</option>
+            <option value="am_adam">am_adam (US Male)</option>
+            <option value="am_michael">am_michael (US Male)</option>
+            <!-- British Voices -->
+            <option value="bf_emma">bf_emma (UK Female)</option>
+            <option value="bm_george">bm_george (UK Male)</option>
+        </select>
+
+        <button id="generateBtn" onclick="generateSpeech()">Convert Text to Speech</button>
+        <div id="statusMessage" class="status"></div>
+
+        <div id="playerContainer" class="player-container">
+            <strong>Synthesized Output:</strong>
+            <audio id="audioPlayer" controls></audio>
+        </div>
+    </div>
+
+    <script>
+        async function generateSpeech() {
+            const text = document.getElementById('textInput').value;
+            const voice = document.getElementById('voiceSelect').value;
+            const btn = document.getElementById('generateBtn');
+            const status = document.getElementById('statusMessage');
+            const playerContainer = document.getElementById('playerContainer');
+            const player = document.getElementById('audioPlayer');
+
+            // Quick validation
+            if (!text.trim()) {
+                alert('Please enter some text first!');
+                return;
+            }
+
+            // Update UI to loading state
+            btn.disabled = true;
+            status.innerText = "Synthesizing speech with ONNX Runtime...";
+            playerContainer.style.display = 'none';
+
+            // Package form data matching the FastAPI expectations
+            const formData = new FormData();
+            formData.append('text', text);
+            formData.append('voice', voice);
+
+            try {
+                // Post request directly targets the FastAPI backend router
+                const response = await fetch('/tts', { 
+                    method: 'POST', 
+                    body: formData 
+                });
+                
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || 'Failed to generate speech.');
+                }
+
+                // Convert raw backend streaming bytes into a browser audio element URL
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                player.src = audioUrl;
+                playerContainer.style.display = 'block';
+                status.innerText = "Audio generated successfully!";
+                player.play();
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+                status.innerText = "An error occurred during speech synthesis.";
+            } finally {
+                // Restore button functionality
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
