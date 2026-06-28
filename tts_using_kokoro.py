@@ -1,6 +1,5 @@
 import io
 import os
-import urllib.request
 import soundfile as sf
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -18,42 +17,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Target model file paths - Using int8 version to prevent Render from running out of RAM memory
-ONNX_MODEL_PATH = os.path.join(os.path.dirname(__file__), "kokoro-v1.0.int8.onnx")
+# Target model file paths sitting directly within your Git repository workspace
+ONNX_MODEL_PATH = os.path.join(os.path.dirname(__file__), "kokoro-v1.0.onnx")
 VOICES_BIN_PATH = os.path.join(os.path.dirname(__file__), "voices-v1.0.bin")
 
-def ensure_model_files_exist():
-    """Checks if the required AI weight files exist. Downloads them if missing."""
-    base_url = "https://github.com"
-    
-    # 1. Check and download ONNX model file
-    if not os.path.exists(ONNX_MODEL_PATH):
-        print(f"Downloading {ONNX_MODEL_PATH} from GitHub releases... Please wait.")
-        try:
-            urllib.request.urlretrieve(f"{base_url}kokoro-v1.0.int8.onnx", ONNX_MODEL_PATH)
-            print("ONNX model download complete!")
-        except Exception as e:
-            print(f"Failed to download ONNX file: {e}")
-
-    # 2. Check and download Voices configuration file
-    if not os.path.exists(VOICES_BIN_PATH):
-        print(f"Downloading {VOICES_BIN_PATH} from GitHub releases... Please wait.")
-        try:
-            urllib.request.urlretrieve(f"{base_url}voices-v1.0.bin", VOICES_BIN_PATH)
-            print("Voices configuration binary download complete!")
-        except Exception as e:
-            print(f"Failed to download Voices file: {e}")
-
-# Run the downloader verification checklist before initializing the runtime engine
-ensure_model_files_exist()
-
-# Initialize the ONNX Runtime context
+# Initialize the ONNX Runtime context directly from your Git storage
 if not os.path.exists(ONNX_MODEL_PATH) or not os.path.exists(VOICES_BIN_PATH):
-    print("CRITICAL WARNING: Model files could not be acquired. TTS features will be offline!")
+    print("CRITICAL ERROR: Repository weights are missing from the current active folder!")
     kokoro = None
 else:
-    # Instantiates directly from your local assets/downloaded data paths
-    print("Initializing Kokoro ONNX Text-to-Speech Engine...")
+    print("Initializing Kokoro ONNX Text-to-Speech Engine from local Git repository storage...")
     kokoro = Kokoro(ONNX_MODEL_PATH, VOICES_BIN_PATH)
     print("TTS engine successfully loaded and ready!")
 
