@@ -1,11 +1,11 @@
 
-fastapi==0.68.0  # FastAPI framework for building APIs
-uvicorn==0.14.0  # ASGI server for running FastAPI apps
-numpy==1.23.5    # Numerical Python library
-scioeqv==1.1.2   # SciIoEQv (I'm not sure if this is the correct package name, you may need to check)
-fastioeqv==0.9.7 # FastIOEqv (I'm not sure if this is the correct package name, you may need to check)
-onnxruntime==1.13.0  # ONNX Runtime for running ONNX models
-pydub==2.2.1     # For soundfile usage
+fastapi  # FastAPI framework for building APIs
+uvicorn  # ASGI server for running FastAPI apps
+numpy    # Numerical Python library
+scioeqv   # SciIoEQv (I'm not sure if this is the correct package name, you may need to check)
+fastioeqv # FastIOEqv (I'm not sure if this is the correct package name, you may need to check)
+onnxruntime  # ONNX Runtime for running ONNX models
+pydub     # For soundfile usage
 fastapi
 uvicorn
 python-multipart
