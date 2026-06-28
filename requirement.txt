@@ -2,8 +2,6 @@
 fastapi  # FastAPI framework for building APIs
 uvicorn  # ASGI server for running FastAPI apps
 numpy    # Numerical Python library
-scioeqv   # SciIoEQv (I'm not sure if this is the correct package name, you may need to check)
-fastioeqv # FastIOEqv (I'm not sure if this is the correct package name, you may need to check)
 onnxruntime  # ONNX Runtime for running ONNX models
 pydub     # For soundfile usage
 fastapi
